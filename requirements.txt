@@ -1,0 +1,10 @@
+arrow==0.8.0
+markovify==0.4.0
+nltk==3.2.1
+oauthlib==2.0.0
+python-dateutil==2.5.3
+requests==2.11.1
+requests-oauthlib==0.7.0
+six==1.10.0
+tweepy==3.5.0
+Unidecode==0.4.19
