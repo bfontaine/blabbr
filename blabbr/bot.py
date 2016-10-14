@@ -1,87 +1,72 @@
 # -*- coding: UTF-8 -*-
 
 import time
-import logging
-import random
-import arrow
+from random import randint, random
 from datetime import timedelta
 
 from blabbr.generation import Generator
 from blabbr.twitter import TwitterConnection
 
-logging.basicConfig(level=logging.DEBUG)
+from blabbr.time import Clock
 
-def now():
-    return arrow.utcnow().to("Europe/Paris")
+MIN_TWEET_INTERVAL = timedelta(minutes=20)
 
 class Bot:
-    def __init__(self):
+    def __init__(self, generator=None, clock=None):
         self.twitter = TwitterConnection()
-        self.generator = Generator()
-        self._last_tweet = now()
+        self.generator = Generator() if generator is None else generator
+        self.clock = Clock() if clock is None else clock
+
+        self.last_tweet = None
+        self.last_tweet_time = None
 
     def live(self):
-        try:
-            logging.info("Starting to live...")
-            self._live()
-        except KeyboardInterrupt:
-            pass
+        """
+        Start the bot's life
+        """
+        while True:
+            if self.schedule.time_to_sleep():
+                self.sleep(40, 50)
+                continue
+
+            if not self.schedule.time_to_chill():
+                self.sleep(20, 25)
+                continue
+
+            self.tick()
+            self.sleep(1, 2)
+
+    def tick(self):
+        """
+        This method is called every one to two minutes when the bot has free
+        time.
+        """
+        feeling_inspired = random() > 0.7
+        if not feeling_inspired:
+            return
+
+        self.tweet()
 
     def tweet(self):
-        if now() < self._last_tweet + timedelta(seconds=20):
-            logging.warning("I refuse to tweet more than twice in 20s")
+        """
+        Post a random tweet. This has no effect if the last tweet was less than
+        20s ago.
+        """
+        if self._last_tweet_time and \
+                self.schedule.now() < self._last_tweet_time + MIN_TWEET_INTERVAL:
             return
 
         text = self.generator.tweet()
-        logging.info("About to tweet: %s" % text)
         self.twitter.tweet(text)
-        self._last_tweet = now()
 
-    def _live(self):
-        while True:
-            time.sleep(random.random() * 10)
-            self._tick()
+        self._last_tweet = text
+        self._last_tweet_time = self.schedule.now()
 
-    def _tick(self):
-        tm = now().time()
-        day_ts = tm.hour * 3600 + tm.minute * 60 + tm.second
-
-        sleeping_time = random.randint(
-            22 * 3600,
-            24 * 3600 - 1,
-        )
-
-        if day_ts > sleeping_time:
-            logging.info("Time to go to bed")
-            time.sleep(8 * 3600)
-            return
-
-        wakeup_time = random.randint(
-            9 * 3600,
-            11 * 3600,
-        )
-        if day_ts < wakeup_time:
-            logging.info("I'd prefer not wake up now")
-            time.sleep(3600)
-            return
-
-        time_to_chill = random.random() > 0.6
-        if not time_to_chill:
-            logging.info("Not a time to chill")
-            time.sleep(random.random() * 3600 + 1800)
-            return
-
-        burst = random.random() >= 0.9
-        if not burst:
-            self.tweet()
-            time.sleep(random.random() * 2 * 120 + 20)
-            return
-
-        logging.info("I'm feeling a burst of inspiration")
-        n = int(random.random() * 5 + 1)
-        for _ in range(n):
-            self.tweet()
-            time.sleep(random.random() * 60 + 20)
+    def sleep(self, minutes_min, minutes_max):
+        """
+        Sleep a random time between the given number of minutes.
+        """
+        time.sleep(randint(minutes_min * 60, minutes_max * 60))
 
 
 if __name__ == "__main__":
