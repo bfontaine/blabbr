@@ -5,7 +5,7 @@ from random import randint, random
 from datetime import timedelta
 
 from blabbr.generation import Generator
-from blabbr.twitter import TwitterConnection
+from blabbr.twitter import TwitterClient
 
 from blabbr.time import Clock
 
@@ -13,7 +13,7 @@ MIN_TWEET_INTERVAL = timedelta(minutes=20)
 
 class Bot:
     def __init__(self, generator=None, clock=None):
-        self.twitter = TwitterConnection()
+        self.twitter = TwitterClient()
         self.generator = Generator() if generator is None else generator
         self.clock = Clock() if clock is None else clock
 

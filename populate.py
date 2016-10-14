@@ -5,9 +5,10 @@ from collections import deque
 from random import sample
 
 from blabbr.config import Config
-from blabbr.twitter import TwitterConnection, tweet_text, parse_text
+from blabbr.twitter import TwitterClient, tweet_text
+from blabbr.text import parse_text
 
-tc = TwitterConnection()
+tc = TwitterClient()
 
 def safe_sample(coll, n):
     if len(coll) < n:
