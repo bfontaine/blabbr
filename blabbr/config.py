@@ -17,6 +17,8 @@ class Config:
             self.save()
 
         self.cfg.read(self.path)
+        self.cfg.setdefault("auth", {})
+        self.cfg.setdefault("seeds", {})
 
     def save(self):
         with open(self.path, "w") as f:
@@ -27,13 +29,11 @@ class Config:
 
     def __exit__(self, *args):
         self.save()
-        pass
 
     def set_auth(self, auth):
         self.cfg["auth"] = dict(auth)
 
     def get_auth(self):
-        self.cfg.setdefault("auth", {})
         return dict(self.cfg["auth"])
 
     def seeds(self):
