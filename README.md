@@ -7,11 +7,12 @@
 
 ## Setup
 
-    pip install -r requirements.txt
+    pip install blabbr
 
-You need to install the following NLTK resources:
-* `taggers/averaged_perceptron_tagger/averaged_perceptron_tagger.pickle`
+Then follow the interactive setup:
+
+    blabbr setup
 
 ## Run
 
-    python blabbr/bot.py
+    blabbr run
