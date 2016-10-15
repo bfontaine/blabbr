@@ -105,6 +105,28 @@ class Cli:
             click.echo("Downloading NTLK data (~2MB)...")
             nltk.download(tagger)
 
+    def config(self, name=None, value=None):
+        if not name:
+            click.echo(self.cfg.git_like_representation())
+            return
+
+        if not "." in name:
+            click.echo("Config variable must be of the form <section>.<name>",
+                       err=True)
+            sys.exit(1)
+
+        section, name = name.split(".", 1)
+        if value:
+            self.cfg.set(section, name, value)
+            self.cfg.save()
+            return
+
+        _nil = object()
+        value = self.cfg.get(section, name, fallback=_nil)
+        if value is not _nil:
+            click.echo(value)
+
+
     def populate(self):
         raise NotImplementedError()
 
@@ -148,6 +170,19 @@ def populate(cli, *args, **kw):
 def run(cli, *args, **kw):
     """Run the bot"""
     cli.run(*args, **kw)
+
+@cli.command()
+@click.argument("name", required=False)
+@click.argument("value", required=False)
+@click.pass_obj
+def config(cli, *args, **kw):
+    """
+    Manage the bot's configuration. This command works like `git config` and
+    prints the whole configuration when called without argument. Passing a name
+    prints only this configuration variable, and passing both a name and a
+    value sets the variable.
+    """
+    cli.config(*args, **kw)
 
 if __name__ == "__main__":
     cli()
