@@ -12,8 +12,9 @@ from blabbr.config import Config
 class Cli:
     DEFAULT_CONFIG_PATH = "~/.blabbr.cfg"
 
-    def __init__(self, cfg, **kw):
+    def __init__(self, cfg, model=None, **kw):
         self.cfg = Config(os.path.expanduser(cfg))
+        self.model_path = model
 
     def print_text(self, text, width=80, **kw):
         text = textwrap.dedent(text).strip()
@@ -127,10 +128,10 @@ class Cli:
             click.echo(value)
 
 
-    def populate(self):
+    def populate(self, model=None):
         raise NotImplementedError()
 
-    def run(self):
+    def run(self, model=None):
         raise NotImplementedError()
 
 
@@ -138,9 +139,11 @@ class Cli:
 @click.option('--cfg', default=Cli.DEFAULT_CONFIG_PATH,
               type=click.Path(),
               help="Path to the config")
+@click.option("--model", type=click.Path(),
+              help="Path to the saved model")
 @click.pass_context
-def cli(ctx, cfg):
-    ctx.obj = Cli(cfg=cfg)
+def cli(ctx, **kw):
+    ctx.obj = Cli(**kw)
 
 @cli.command()
 @click.option("--consumer-key", metavar="KEY", help="Consumer key (API key)")
@@ -149,9 +152,8 @@ def cli(ctx, cfg):
 @click.option("--token", metavar="TOKEN", help="Access token")
 @click.option("--token-secret", metavar="SECRET", help="Access token secret")
 @click.option("--noninteractive", is_flag=True,
-              help=(
-                  "Fail if one option is missing instead of offering an"
-                  " interactive setup."))
+              help=("Fail if one option is missing instead of offering an"
+                    " interactive setup."))
 @click.option("--force", is_flag=True,
               help="Force the setup even if the bot is already set.")
 @click.pass_obj
@@ -162,7 +164,7 @@ def setup(cli, *args, **kw):
 @cli.command()
 @click.pass_obj
 def populate(cli, *args, **kw):
-    """Populate the text corpus"""
+    """Populate the Markov model"""
     cli.populate(*args, **kw)
 
 @cli.command()
@@ -179,8 +181,8 @@ def config(cli, *args, **kw):
     """
     Manage the bot's configuration. This command works like `git config` and
     prints the whole configuration when called without argument. Passing a name
-    prints only this configuration variable, and passing both a name and a
-    value sets the variable.
+    prints only this variable, and passing both a name and a value sets the
+    variable.
     """
     cli.config(*args, **kw)
 
