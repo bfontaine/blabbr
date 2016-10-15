@@ -8,6 +8,8 @@ import click
 import tweepy
 
 from blabbr.config import Config
+from blabbr.model import ModelBuilder
+from blabbr.bot import Bot
 
 class Cli:
     DEFAULT_CONFIG_PATH = "~/.blabbr.cfg"
@@ -15,6 +17,7 @@ class Cli:
     def __init__(self, cfg, model=None, **kw):
         self.cfg = Config(os.path.expanduser(cfg))
         self.model_path = model
+        self.model_builder = None
 
     def print_text(self, text, width=80, **kw):
         text = textwrap.dedent(text).strip()
@@ -127,12 +130,21 @@ class Cli:
         if value is not _nil:
             click.echo(value)
 
+    def _load_model(self):
+        self.model_builder = ModelBuilder(self.model_path)
 
-    def populate(self, model=None):
+    def _model(self):
+        return self.model_builder.model()
+
+    def populate(self, force=False):
+        self._load_model()
+        # TODO
         raise NotImplementedError()
 
-    def run(self, model=None):
-        raise NotImplementedError()
+    def run(self):
+        self._load_model()
+
+        Bot(cfg=self.cfg, model=self._model()).live()
 
 
 @click.group()
@@ -162,6 +174,8 @@ def setup(cli, *args, **kw):
     cli.setup(*args, **kw)
 
 @cli.command()
+@click.option("--force", is_flag=True,
+              help="Override any existing model instead of merging.")
 @click.pass_obj
 def populate(cli, *args, **kw):
     """Populate the Markov model"""

@@ -5,15 +5,11 @@ import time
 import tweepy
 import tweepy.auth
 
-from blabbr.config import Config
 from blabbr.text import parse_text
 
 class TwitterClient:
     @classmethod
-    def __init__(self, cfg=None):
-        if cfg is None:
-            cfg = Config()
-
+    def __init__(self, cfg):
         ks = cfg.get_auth()
 
         auth = tweepy.OAuthHandler(ks["consumer_key"],
