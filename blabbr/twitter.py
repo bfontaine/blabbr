@@ -8,19 +8,6 @@ import tweepy.auth
 from blabbr.config import Config
 from blabbr.text import parse_text
 
-def oauth_dance(consumer_key, consumer_secret):
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    redirect_url = auth.get_authorization_url()
-    print(redirect_url)
-    code = input("Verification code: ")
-    auth.get_access_token(code)
-    return {
-        "consumer_key": consumer_key,
-        "consumer_secret": consumer_secret,
-        "token_key": auth.access_token,
-        "token_secret": auth.access_token_secret,
-    }
-
 class TwitterClient:
     @classmethod
     def __init__(self, cfg=None):
@@ -31,7 +18,7 @@ class TwitterClient:
 
         auth = tweepy.OAuthHandler(ks["consumer_key"],
                                    ks["consumer_secret"])
-        auth.set_access_token(ks["token_key"], ks["token_secret"])
+        auth.set_access_token(ks["token"], ks["token_secret"])
         self.api = tweepy.API(auth)
 
     def dig(self, user_id, n=20):

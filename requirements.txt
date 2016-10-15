@@ -1,4 +1,5 @@
 arrow==0.8.0
+click==6.6
 markovify==0.4.0
 nltk==3.2.1
 oauthlib==2.0.0
