@@ -3,12 +3,14 @@
 import re
 import json
 import os.path
+from collections import deque
 
 import nltk
 import markovify
 import markovify.text
 from markovify.chain import Chain
 
+from blabbr.twitter import TwitterClient
 
 # Simple format versionning
 DUMP_FMT_VERSION = 1
@@ -97,3 +99,135 @@ class ModelBuilder:
     def save(self):
         with open(self.path, "w") as f:
             self.model().dump(f)
+
+
+class TwitterDigger:
+    def __init__(self, cfg):
+        names = cfg.get("seeds", "screen_names")
+        self.names = deque([n.strip() for n in names.split(",")])
+        self._seen = set()
+        self._twitter = TwitterClient(cfg)
+        self._lang = cfg.get("content", "lang")
+
+    def screen_names(self, pick_friends=10):
+        """
+        Generate Twitter screen names from the configured seed list
+        """
+        while self.names:
+            screen_name = self.names.popleft()
+            if screen_name in self._seen:
+                continue
+            self._seen.add(screen_name)
+            yield screen_name
+
+            if pick_friends <= 0:
+                continue
+
+            for friend in self._twitter.friends(screen_name, n=pick_friends):
+                if self._lang and friend.lang != self._lang:
+                    continue
+                self.screen_names.append(friend.screen_name)
+
+    def account_timeline(self, screen_name, size=1000):
+        """
+        Yield an account's last tweets. Tweets are filtered and cleaned up so
+        the returned size might be lower than the one given as an argument
+        (default is 1000).
+        """
+        acceptable_languages = set()
+        if self._lang:
+            # Accept tweets with unknown languages
+            acceptable_languages = set((None, "und", self._lang))
+
+        for status in self._twitter.user_tweets(screen_name, n=size):
+            text = self.filter_status(status, acceptable_languages)
+            if text:
+                yield text
+
+
+    def filter_status(status, languages=None):
+        if languages and status.lang in languages:
+            return
+
+        if status.is_quote_status:
+            return
+
+        # Merge spaces
+        text = re.sub(r"\s+", " ", status.text)
+        # Remove (truncated) URLs
+        text = re.sub(r"https?://[^ ]*", "", text)
+
+        text = text.strip()
+        # Don't yield empty texts
+        if not text:
+            return
+
+        lower_text = text.lower()
+        for prefix in (
+                # Global
+                "rt ", "mt ", "@", ".@",
+                # FR
+                "je ", "moi ", "mon ", "ma ", "mes ",
+                # EN
+                "i ", "my "):
+            if lower_text.startswith(prefix):
+                return
+
+        # truncated
+        if text.endswith("…"):
+            return
+
+        # Those are mostly headlines
+        if re.match(r"^\w+ *:", text):
+            return
+
+        # quick normalization
+        repls = (
+            (r"&gt;", ">"),
+            (r"&lt;", "<"),
+            (r"&amp;", "&"),
+
+            # FR abbreviations
+            (r"\bpr\b", "pour"),
+            (r"\bgvt\b", "gouvernement"),
+
+            # "foo:" -> "foo :" (FR)
+            (r"\b:", " :"),
+            # ".!!!" -> "!"
+            (r"\.+!+\.*", "!"),
+            # ".?!!!" -> "?!"
+            (r"\.+\?+!+\.*", "!"),
+            # "foo!!" -> "foo !" (FR)
+            (r"\b!_", " !"),
+            # "25 %" -> "25%"
+            (r"\b %", "%"),
+            # "blabla ." -> "blabla."
+            (r" \.", "."),
+
+            (r"\b\.\.\b", "... "),
+
+            # "[...]" -> "..."
+            (r"\[\.\.\.+\]", "..."),
+
+            # Fix bogus ellipsis e.g. "...…" -> "…"
+            (r"\.+…\.*", "…"),
+
+            # Remove ':' or '-' at the end of the tweet
+            (r"[-:]$", ""),
+
+            # Remove "via @foo"
+            (r"via @[^ ]+$", ""),
+            (r"(?:via )?#feedly", ""),
+            (r"via$", ""),
+
+            # "aa | bb" -> "aa  bb"
+            (r"\|", ""),
+
+            # join spaces again
+            (r"\s+", " "),
+        )
+
+        for before, after in repls:
+            text = re.sub(before, after, text).strip()
+
+        return text

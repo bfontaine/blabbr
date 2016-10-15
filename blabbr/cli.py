@@ -143,8 +143,11 @@ class Cli:
 
     def run(self):
         self._load_model()
+        model = self._model()
+        if model is None:
+            raise RuntimeError("The bot cannot run with an empty model")
 
-        Bot(cfg=self.cfg, model=self._model()).live()
+        Bot(cfg=self.cfg, model=model).live()
 
 
 @click.group()

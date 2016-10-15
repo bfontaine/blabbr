@@ -21,7 +21,7 @@ class Bot:
         elif model:
             self.generator = Generator(model)
         else:
-            self.generator = Generator()
+            raise RuntimeError("The bot needs a generator or a model")
 
         self.last_tweet = None
         self.last_tweet_time = None

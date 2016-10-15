@@ -17,7 +17,7 @@ class TwitterClient:
         auth.set_access_token(ks["token"], ks["token_secret"])
         self.api = tweepy.API(auth)
 
-    def dig(self, user_id, n=20):
+    def user_tweets(self, user_id, n=20):
         cursor = tweepy.Cursor(self.api.user_timeline, id=user_id, count=n)
         for status in rate_limited(cursor.items(n)):
             yield status
@@ -38,12 +38,3 @@ def rate_limited(cursor, sleeping_time=(15*60+5)):
         except tweepy.RateLimitError:
             print("Sleeping...")
             time.sleep(sleeping_time)
-
-def tweet_text(t):
-    if t.lang not in (None, "und", "fr"):
-        return
-
-    if t.is_quote_status:
-        return
-
-    return parse_text(t.text)
