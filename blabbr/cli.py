@@ -136,7 +136,7 @@ class Cli:
     def _model(self):
         return self.model_builder.model()
 
-    def populate(self, force=False):
+    def populate(self):
         self._load_model()
         # TODO
         raise NotImplementedError()
@@ -174,8 +174,6 @@ def setup(cli, *args, **kw):
     cli.setup(*args, **kw)
 
 @cli.command()
-@click.option("--force", is_flag=True,
-              help="Override any existing model instead of merging.")
 @click.pass_obj
 def populate(cli, *args, **kw):
     """Populate the Markov model"""
