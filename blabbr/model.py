@@ -11,6 +11,7 @@ import markovify.text
 from markovify.chain import Chain
 
 from blabbr.twitter import TwitterClient
+from blabbr import text as tx
 
 # Simple format versionning
 DUMP_FMT_VERSION = 1
@@ -146,16 +147,14 @@ class TwitterDigger:
 
 
     def filter_status(status, languages=None):
-        if languages and status.lang in languages:
+        if languages and status.lang not in languages:
             return
 
         if status.is_quote_status:
             return
 
-        # Merge spaces
-        text = re.sub(r"\s+", " ", status.text)
-        # Remove (truncated) URLs
-        text = re.sub(r"https?://[^ ]*", "", text)
+        text = tx.normalize_spaces(status.text)
+        text = tx.strip_urls(text)
 
         text = text.strip()
         # Don't yield empty texts
@@ -181,53 +180,4 @@ class TwitterDigger:
         if re.match(r"^\w+ *:", text):
             return
 
-        # quick normalization
-        repls = (
-            (r"&gt;", ">"),
-            (r"&lt;", "<"),
-            (r"&amp;", "&"),
-
-            # FR abbreviations
-            (r"\bpr\b", "pour"),
-            (r"\bgvt\b", "gouvernement"),
-
-            # "foo:" -> "foo :" (FR)
-            (r"\b:", " :"),
-            # ".!!!" -> "!"
-            (r"\.+!+\.*", "!"),
-            # ".?!!!" -> "?!"
-            (r"\.+\?+!+\.*", "!"),
-            # "foo!!" -> "foo !" (FR)
-            (r"\b!_", " !"),
-            # "25 %" -> "25%"
-            (r"\b %", "%"),
-            # "blabla ." -> "blabla."
-            (r" \.", "."),
-
-            (r"\b\.\.\b", "... "),
-
-            # "[...]" -> "..."
-            (r"\[\.\.\.+\]", "..."),
-
-            # Fix bogus ellipsis e.g. "...…" -> "…"
-            (r"\.+…\.*", "…"),
-
-            # Remove ':' or '-' at the end of the tweet
-            (r"[-:]$", ""),
-
-            # Remove "via @foo"
-            (r"via @[^ ]+$", ""),
-            (r"(?:via )?#feedly", ""),
-            (r"via$", ""),
-
-            # "aa | bb" -> "aa  bb"
-            (r"\|", ""),
-
-            # join spaces again
-            (r"\s+", " "),
-        )
-
-        for before, after in repls:
-            text = re.sub(before, after, text).strip()
-
-        return text
+        return tx.normalize(text)

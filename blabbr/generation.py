@@ -17,13 +17,15 @@ class Generator:
             if not self._tweet_ok(t, min_length):
                 continue
 
-            if len(t) < 138 and t[-1] not in "?!.":
-                if random() > 0.9:
-                    bang = "!" if random() > 0.1 else "!!"
-                    t = "%s %s" % (t, bang)
-
-            yield t
+            yield self.decorate_tweet(t)
             n += 1
+
+    def decorate_tweet(self, text):
+        if len(text) < 138 and text[-1] not in "?!.":
+            if random() > 0.9:
+                bang = "!" if random() > 0.1 else "!!"
+                text = "%s %s" % (text, bang)
+        return text
 
     def tweet(self, min_length=50):
         for t in self.tweets(1, min_length=min_length):
@@ -31,6 +33,7 @@ class Generator:
 
     def _tweet_ok(self, t, min_length=50):
         _forbidden_terms = (
+            # FR
             "faut tuer", "à mort", "suicid", "bombe",
         )
 
