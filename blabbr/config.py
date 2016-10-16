@@ -81,6 +81,3 @@ class Config:
 
     def get_auth(self):
         return dict(self.cfg["auth"])
-
-    def seeds(self):
-        return self.cfg["seeds"]
