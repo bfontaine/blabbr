@@ -138,10 +138,10 @@ class Cli:
         digger = TwitterDigger(self.cfg)
 
         if raw:
-            with open(raw, "w") as f:
+            with open(raw, "a") as f:
                 try:
                     for tweet in digger.tweets():
-                        f.write("%s\n" % tweet)
+                        f.write("%s\n" % tweet.replace("\n", " "))
                 except KeyboardInterrupt:
                     pass
             return
