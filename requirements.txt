@@ -1,5 +1,4 @@
 arrow==0.8.0
--e git+gh:bfontaine/blabbr.git@216e5f1a1bc71df005ff49d31c2d0806d15cc203#egg=blabbr
 click==6.6
 markovify==0.4.2
 nltk==3.2.1
