@@ -169,9 +169,10 @@ class Cli:
                         mb.feed_corpus("\n".join(corpus))
                         corpus = []
             except KeyboardInterrupt:
-                if corpus:
-                    click.echo("Feeding %d tweets..." % len(corpus))
-                    mb.feed_corpus("\n".join(corpus))
+                pass
+            if corpus:
+                click.echo("Feeding %d tweets..." % len(corpus))
+                mb.feed_corpus("\n".join(corpus))
 
     def run(self, dry_run):
         self._load_model()
