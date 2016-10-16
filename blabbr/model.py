@@ -164,7 +164,7 @@ class TwitterDigger:
             acceptable_languages = set((None, "und", self._lang))
 
         for status in self._twitter.user_tweets(screen_name, n=size):
-            text = self.filter_status(status, acceptable_languages)
+            text = filter_status(status, acceptable_languages)
             if text:
                 yield text
 
@@ -176,38 +176,57 @@ class TwitterDigger:
             for text in self.account_timeline(name, size=timeline_size):
                 yield text
 
-    def filter_status(self, status, languages=None):
-        if languages and status.lang not in languages:
+def filter_status(status, languages=None):
+    if languages and status.lang not in languages:
+        return
+
+    if status.is_quote_status:
+        return
+
+    return filter_status_text(status.text)
+
+def filter_status_text(text):
+    text = tx.merge_spaces(text)
+    text = tx.strip_urls(text)
+
+    min_length = 30  # Arbitrary
+
+    text = text.strip()
+    # Don't yield empty or too short texts
+    if len(text) < min_length:
+        return
+
+    lower_text = text.lower()
+    for prefix in (
+            # Global
+            "rt ", "mt ", "@", ".@",
+            # FR
+            "je ", "moi ", "mon ", "ma ", "mes ",
+            # EN
+            "i ", "my "):
+        if lower_text.startswith(prefix):
             return
 
-        if status.is_quote_status:
-            return
+    # truncated
+    if text.endswith("…"):
+        return
 
-        text = tx.merge_spaces(status.text)
-        text = tx.strip_urls(text)
+    # Those are mostly headlines
+    if re.match(r"^[-\w]+ *:", text):
+        return
 
-        text = text.strip()
-        # Don't yield empty texts
-        if not text:
-            return
+    text = tx.normalize(text)
 
-        lower_text = text.lower()
-        for prefix in (
-                # Global
-                "rt ", "mt ", "@", ".@",
-                # FR
-                "je ", "moi ", "mon ", "ma ", "mes ",
-                # EN
-                "i ", "my "):
-            if lower_text.startswith(prefix):
-                return
+    # Re-check the text length now that it has been normalized
+    if len(text) < min_length:
+        return
 
-        # truncated
-        if text.endswith("…"):
-            return
+    # Remove tweets that consist of hashtags/mentions only
+    if [w for w in text.split(" ") if w.startswith("#") or w.startswith("@")]:
+        return
 
-        # Those are mostly headlines
-        if re.match(r"^\w+ *:", text):
-            return
+    # Remove tweets with no text
+    if re.match(r"^\W+$", text):
+        return
 
-        return tx.normalize(text)
+    return text
