@@ -12,7 +12,8 @@ from blabbr.time import Clock
 MIN_TWEET_INTERVAL = timedelta(minutes=20)
 
 class Bot:
-    def __init__(self, cfg=None, generator=None, clock=None, model=None):
+    def __init__(self, cfg=None, generator=None, clock=None, model=None,
+            dry_run=False):
         self.twitter = TwitterClient(cfg=cfg)
         self.clock = Clock() if clock is None else clock
 
@@ -23,6 +24,7 @@ class Bot:
         else:
             raise RuntimeError("The bot needs a generator or a model")
 
+        self.dry_run = dry_run
         self.last_tweet = None
         self.last_tweet_time = None
 
@@ -63,7 +65,10 @@ class Bot:
             return
 
         text = self.generator.tweet()
-        self.twitter.tweet(text)
+        if self.dry_run:
+            print("Tweet: %s" % text)
+        else:
+            self.twitter.tweet(text)
 
         self._last_tweet = text
         self._last_tweet_time = self.schedule.now()

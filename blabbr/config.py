@@ -26,14 +26,15 @@ class Config:
     def __init__(self, location="$root/blabbr.cfg"):
         self.path = location.replace("$root", root)
         self.cfg = ConfigParser()
-        self.set_defaults()
         self.load()
 
     def load(self):
         if not os.path.isfile(self.path):
+            self.set_defaults()
             self.save()
-
-        self.cfg.read(self.path)
+        else:
+            self.cfg.read(self.path)
+            self.set_defaults()
 
     def save(self):
         with open(self.path, "w") as f:

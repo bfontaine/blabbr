@@ -5,8 +5,6 @@ import time
 import tweepy
 import tweepy.auth
 
-from blabbr.text import parse_text
-
 class TwitterClient:
     @classmethod
     def __init__(self, cfg):

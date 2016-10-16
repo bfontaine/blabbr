@@ -20,6 +20,8 @@ DUMP_FMT_VERSION = 1
 # from https://github.com/jsvine/markovify#extending-markovifytext
 class POSifiedText(markovify.Text):
     def __init__(self, input_text, state_size=2, chain=None):
+        self.tokenizer = TweetTokenizer(reduce_len=True, strip_handles=True)
+
         # Circumvent some limitations of markovify by allowing one to create a
         # POSifiedText from a markovify.Text instance
         if isinstance(input_text, markovify.Text):
@@ -29,8 +31,6 @@ class POSifiedText(markovify.Text):
             self.chain = m.chain
         else:
             super().__init__(input_text, state_size, chain)
-
-        self.tokenizer = TweetTokenizer(reduce_len=True, strip_handles=True)
 
     def word_split(self, sentence):
         words = self.tokenizer.tokenize(sentence)
@@ -53,7 +53,8 @@ class Model:
     def dump(self, writer):
         d = {
             "version": DUMP_FMT_VERSION,
-            "chain": dict(self.m.chain.model),
+            # We can't store a dict because JSON doesn't accept lists as keys
+            "chain": list(self.m.chain.model.items()),
         }
         return json.dump(d, writer)
 
@@ -61,18 +62,21 @@ class Model:
     def load(cls, reader):
         d = json.load(reader)
         assert d["version"] == DUMP_FMT_VERSION
+        items = [(tuple(k), v) for k, v in d["chain"]]
+
         # .from_json also works on dicts
-        chain = Chain.from_json(d["chain"])
+        chain = Chain.from_json(dict(items))
         return cls(POSifiedText("", chain=chain))
 
 
 class ModelBuilder:
     def __init__(self, path):
-        self._load(path)
+        self.path = path
+        self._load()
 
-    def _load(self, path):
-        if path is not None and os.path.isfile(path):
-            with open(path) as f:
+    def _load(self):
+        if self.path is not None and os.path.isfile(self.path):
+            with open(self.path) as f:
                 self._markov = Model.load(f).m
         else:
             self._markov = None
@@ -93,15 +97,25 @@ class ModelBuilder:
             self._markov = model
             return
 
-        self._markov = POSifiedText(markovify.combine([self._markov, model]))
+        self._markov = NewlinePOSifiedText(markovify.combine([self._markov, model]))
 
     def model(self):
         if self._markov:
             return Model(self._markov)
 
     def save(self):
+        model = self.model()
+        if not model:
+            return
+
         with open(self.path, "w") as f:
-            self.model().dump(f)
+            model.dump(f)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.save()
 
 
 class TwitterDigger:
@@ -129,7 +143,7 @@ class TwitterDigger:
             for friend in self._twitter.friends(screen_name, n=pick_friends):
                 if self._lang and friend.lang != self._lang:
                     continue
-                self.screen_names.append(friend.screen_name)
+                self.names.append(friend.screen_name)
 
     def account_timeline(self, screen_name, size=1000):
         """
@@ -147,8 +161,15 @@ class TwitterDigger:
             if text:
                 yield text
 
+    def tweets(self, pick_friends=10, timeline_size=1000):
+        """
+        Generate tweets from seed accounts' timelines and their friends'.
+        """
+        for name in self.screen_names(pick_friends=pick_friends):
+            for text in self.account_timeline(name, size=timeline_size):
+                yield text
 
-    def filter_status(status, languages=None):
+    def filter_status(self, status, languages=None):
         if languages and status.lang not in languages:
             return
 

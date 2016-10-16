@@ -8,7 +8,7 @@ import click
 import tweepy
 
 from blabbr.config import Config
-from blabbr.model import ModelBuilder
+from blabbr.model import ModelBuilder, TwitterDigger
 from blabbr.bot import Bot
 
 class Cli:
@@ -132,22 +132,34 @@ class Cli:
 
     def _load_model(self):
         self.model_builder = ModelBuilder(self.model_path)
+        return self.model_builder
 
     def _model(self):
         return self.model_builder.model()
 
     def populate(self):
-        self._load_model()
-        # TODO
-        raise NotImplementedError()
+        with self._load_model() as mb:
+            digger = TwitterDigger(self.cfg)
+            corpus = []
+            try:
+                for tweet in digger.tweets():
+                    corpus.append(tweet)
+                    if len(corpus) == 2000:
+                        click.echo("Feeding 2000 tweets...")
+                        mb.feed_corpus("\n".join(corpus))
+                        corpus = []
+            except KeyboardInterrupt:
+                if corpus:
+                    click.echo("Feeding %d tweets..." % len(corpus))
+                    mb.feed_corpus("\n".join(corpus))
 
-    def run(self):
+    def run(self, dry_run):
         self._load_model()
         model = self._model()
         if model is None:
             raise RuntimeError("The bot cannot run with an empty model")
 
-        Bot(cfg=self.cfg, model=model).live()
+        Bot(cfg=self.cfg, model=model, dry_run=dry_run).live()
 
 
 @click.group()
@@ -183,6 +195,7 @@ def populate(cli, *args, **kw):
     cli.populate(*args, **kw)
 
 @cli.command()
+@click.option("--dry-run", "-n", is_flag=True, help="Don't tweet anything")
 @click.pass_obj
 def run(cli, *args, **kw):
     """Run the bot"""
