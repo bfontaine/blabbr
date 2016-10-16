@@ -22,7 +22,7 @@ class Clock:
 
         # Sleep at some point between 22:00 and 23:59
         sleeping_time = randint(22 * 60, 24 * 60 - 1)
-        # Wake up at some point between 8:00 and 10:00
+        # Wake up at some point between 9:00 and 11:00
         wakeup_time = randint(9 * 60, 11 * 60)
 
         return day_ts > sleeping_time or day_ts < wakeup_time

@@ -3,9 +3,6 @@
 import os.path
 from configparser import ConfigParser
 
-here = os.path.dirname(__file__)
-root = os.path.abspath(os.path.join(here, ".."))
-
 DEFAULT_CONFIG = {
     "content": {
         "lang": "en",
