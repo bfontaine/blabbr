@@ -66,7 +66,7 @@ class Model:
 
         # .from_json also works on dicts
         chain = Chain.from_json(dict(items))
-        return cls(POSifiedText("", chain=chain))
+        return cls(NewlinePOSifiedText("", chain=chain))
 
 
 class ModelBuilder:
@@ -97,7 +97,7 @@ class ModelBuilder:
             self._markov = model
             return
 
-        self._markov = NewlinePOSifiedText(markovify.combine([self._markov, model]))
+        self._markov = cls(markovify.combine([self._markov, model]))
 
     def model(self):
         if self._markov:
