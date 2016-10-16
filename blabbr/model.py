@@ -155,7 +155,7 @@ class TwitterDigger:
         if status.is_quote_status:
             return
 
-        text = tx.normalize_spaces(status.text)
+        text = tx.merge_spaces(status.text)
         text = tx.strip_urls(text)
 
         text = text.strip()

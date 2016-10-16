@@ -2,11 +2,11 @@
 
 import re
 
-def normalize_spaces(text):
+def merge_spaces(text):
     return re.sub(r"\s+", " ", text)
 
 def strip_urls(text):
-    # Remove (truncated) URLs
+    """Remove (truncated) URLs"""
     return re.sub(r"https?://[^ ]*", "", text)
 
 def normalize(text):
@@ -50,9 +50,6 @@ def normalize(text):
 
         # "aa | bb" -> "aa  bb"
         (r"\|", ""),
-
-        # join spaces again
-        (r"\s+", " "),
     )
 
     for before, after in repls:
