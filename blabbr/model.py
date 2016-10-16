@@ -6,6 +6,7 @@ import os.path
 from collections import deque
 
 import nltk
+from nltk.tokenize import TweetTokenizer
 import markovify
 import markovify.text
 from markovify.chain import Chain
@@ -26,12 +27,13 @@ class POSifiedText(markovify.Text):
             self.input_text = m.input_text
             self.rejoined_text = m.rejoined_text
             self.chain = m.chain
-            return
+        else:
+            super().__init__(input_text, state_size, chain)
 
-        super().__init__(input_text, state_size, chain)
+        self.tokenizer = TweetTokenizer(reduce_len=True, strip_handles=True)
 
     def word_split(self, sentence):
-        words = re.split(self.word_split_pattern, sentence)
+        words = self.tokenizer.tokenize(sentence)
         words = ["::".join((tag, word)) for word, tag in nltk.pos_tag(words)]
         return words
 
