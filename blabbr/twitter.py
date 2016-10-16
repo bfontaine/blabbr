@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+import sys
 import time
 
 import tweepy
@@ -34,5 +35,5 @@ def rate_limited(cursor, sleeping_time=(15*60+5)):
         try:
             yield next(cursor)
         except tweepy.RateLimitError:
-            print("Sleeping...")
+            print("Sleeping...", file=sys.stderr)
             time.sleep(sleeping_time)

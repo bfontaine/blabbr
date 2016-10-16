@@ -134,12 +134,34 @@ class Cli:
     def _model(self):
         return self.model_builder.model()
 
-    def populate(self):
+    def populate(self, raw=None, from_raw=None):
+        digger = TwitterDigger(self.cfg)
+
+        if raw:
+            with open(raw, "w") as f:
+                try:
+                    for tweet in digger.tweets():
+                        f.write("%s\n" % tweet)
+                except KeyboardInterrupt:
+                    pass
+            return
+
+        tweets = []
+
+        if from_raw:
+            with open(from_raw) as f:
+                for line in f:
+                    tweets.append(line.rstrip())
+        else:
+            tweets = digger.tweets()
+
+        return self._populate(tweets)
+
+    def _populate(self, tweets):
         with self._load_model() as mb:
-            digger = TwitterDigger(self.cfg)
             corpus = []
             try:
-                for tweet in digger.tweets():
+                for tweet in tweets:
                     corpus.append(tweet)
                     if len(corpus) == 2000:
                         click.echo("Feeding 2000 tweets...")
@@ -184,6 +206,11 @@ def setup(cli, *args, **kw):
     cli.setup(*args, **kw)
 
 @cli.command()
+@click.option("--raw", type=click.Path(),
+              help=("Dump tweets in a file instead of feeding a model."
+                    " Useful for debugging."))
+@click.option("--from-raw", type=click.Path(),
+              help=("Read tweets from a file instead of the Twitter API."))
 @click.pass_obj
 def populate(cli, *args, **kw):
     """Populate the Markov model"""

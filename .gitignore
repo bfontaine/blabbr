@@ -1,5 +1,6 @@
 *.cfg
 *.json
+*.txt
 test_data
 texts.txt
 NOTES
