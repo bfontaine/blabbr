@@ -67,7 +67,7 @@ def normalize(text):
 
 def fix_punctuation(text):
     # This may vary per language
-    text = text.replace(" ' ", "'")
-    text = re.sub(" ([\.,])", "\\1", text)
+    text = re.sub(r" (['’]) ", "\\1", text)
+    text = re.sub(r" ([\.,])", "\\1", text)
 
     return text
