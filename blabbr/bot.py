@@ -15,7 +15,7 @@ MIN_TWEET_INTERVAL = timedelta(minutes=20)
 
 class Bot:
     def __init__(self, cfg=None, generator=None, clock=None, model=None,
-                 dry_run=False):
+                 dry_run=False, debug=False):
         self.twitter = TwitterClient(cfg=cfg)
         self.clock = Clock() if clock is None else clock
         self.logger = getLogger("bot")
@@ -27,7 +27,11 @@ class Bot:
         else:
             raise RuntimeError("The bot needs a generator or a model")
 
+        if debug:
+            dry_run = True
+
         self.dry_run = dry_run
+        self.debug = debug
         self.last_tweet = None
         self.last_tweet_time = None
 
@@ -71,8 +75,8 @@ class Bot:
         20s ago.
         """
         now = self.clock.now()
-        if self._last_tweet_time and \
-                now < self._last_tweet_time + MIN_TWEET_INTERVAL:
+        if self.last_tweet_time and \
+                now < self.last_tweet_time + MIN_TWEET_INTERVAL:
             return
 
         text = self.generator.tweet()
@@ -80,14 +84,18 @@ class Bot:
         if not self.dry_run:
             self.twitter.tweet(text)
 
-        self._last_tweet = text
-        self._last_tweet_time = now
+        self.last_tweet = text
+        self.last_tweet_time = now
 
     def sleep(self, minutes_min, minutes_max):
         """
         Sleep a random time between the given number of minutes.
         """
-        time.sleep(randint(minutes_min * 60, minutes_max * 60))
+        duration = randint(minutes_min * 60, minutes_max * 60)
+        if self.debug:
+            self.logger.debug("Would sleep %d seconds" % duration)
+        else:
+            time.sleep(duration)
 
 
 if __name__ == "__main__":

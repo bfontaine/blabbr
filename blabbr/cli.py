@@ -174,13 +174,13 @@ class Cli:
                 click.echo("Feeding %d tweets..." % len(corpus))
                 mb.feed_corpus("\n".join(corpus))
 
-    def run(self, dry_run):
+    def run(self, dry_run=False, debug=False):
         self._load_model()
         model = self._model()
         if model is None:
             raise RuntimeError("The bot cannot run with an empty model")
 
-        Bot(cfg=self.cfg, model=model, dry_run=dry_run).live()
+        Bot(cfg=self.cfg, model=model, dry_run=dry_run, debug=debug).live()
 
 
 @click.group()
@@ -222,7 +222,10 @@ def populate(cli, *args, **kw):
 
 
 @cli.command()
-@click.option("--dry-run", "-n", is_flag=True, help="Don't tweet anything")
+@click.option("--dry-run", "-n", is_flag=True,
+              help="Don't tweet anything (useful for debugging).")
+@click.option("--debug", is_flag=True,
+        help="Debug mode. Implies --dry-run.")
 @click.pass_obj
 def run(cli, *args, **kw):
     """Run the bot"""
