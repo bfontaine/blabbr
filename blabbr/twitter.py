@@ -6,6 +6,7 @@ import time
 import tweepy
 import tweepy.auth
 
+
 class TwitterClient:
     @classmethod
     def __init__(self, cfg):

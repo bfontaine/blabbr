@@ -2,12 +2,15 @@
 
 import re
 
+
 def merge_spaces(text):
     return re.sub(r"\s+", " ", text)
+
 
 def strip_urls(text):
     """Remove (truncated) URLs"""
     return re.sub(r"https?://[^ ]*", "", text)
+
 
 def normalize(text):
     repls = (
@@ -64,6 +67,7 @@ def normalize(text):
         text = re.sub(before, after, text).strip()
 
     return text
+
 
 def fix_punctuation(text):
     # This may vary per language

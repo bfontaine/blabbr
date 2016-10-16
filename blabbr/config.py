@@ -19,6 +19,7 @@ DEFAULT_CONFIG = {
     }
 }
 
+
 class Config:
     DEFAULT_PATH = os.path.expanduser("~/.blabbr.cfg")
 

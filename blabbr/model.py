@@ -17,6 +17,7 @@ from blabbr import text as tx
 # Simple format versionning
 DUMP_FMT_VERSION = 1
 
+
 # from https://github.com/jsvine/markovify#extending-markovifytext
 class POSifiedText(markovify.Text):
     def __init__(self, input_text, state_size=2, chain=None):
@@ -35,11 +36,12 @@ class POSifiedText(markovify.Text):
     def word_split(self, sentence):
         words = self.tokenizer.tokenize(sentence)
         words = ["::".join((tag, word))
-                    for word, tag in nltk.pos_tag(words) if word]
+                 for word, tag in nltk.pos_tag(words) if word]
         return words
 
     def word_join(self, words):
         return " ".join(word.split("::", 1)[1] for word in words)
+
 
 class NewlinePOSifiedText(POSifiedText):
     def sentence_split(self, text):
@@ -51,8 +53,9 @@ class Model:
         self.m = markov_model
 
     def make_tweet(self, size=140, tries=100, max_overlap_ratio=0.5, **kw):
-        return self.m.make_short_sentence(size,
-                tries=tries, max_overlap_ratio=max_overlap_ratio, **kw)
+        return self.m.make_short_sentence(size, tries=tries,
+                                          max_overlap_ratio=max_overlap_ratio,
+                                          **kw)
 
     def dump(self, writer):
         d = {

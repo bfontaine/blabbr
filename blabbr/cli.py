@@ -10,6 +10,7 @@ from blabbr.config import Config
 from blabbr.model import ModelBuilder, TwitterDigger
 from blabbr.bot import Bot
 
+
 class Cli:
     def __init__(self, cfg=None, model=None, **kw):
         self.cfg = Config.from_path(cfg)
@@ -32,10 +33,10 @@ class Cli:
     def setup_auth(self, noninteractive=False, force=False, **kw):
         if not force and self.cfg.get_auth():
             click.echo("The bot is already setup! Use --force if you're sure.",
-                        err=True)
+                       err=True)
             sys.exit(1)
 
-        auth = {k: kw.get(k) for k in \
+        auth = {k: kw.get(k) for k in
                 ("consumer_key", "consumer_secret", "token", "token_secret")}
 
         missing_infos = set(k for k, v in auth.items() if v is None)
@@ -43,7 +44,7 @@ class Cli:
         if missing_infos:
             if noninteractive:
                 click.echo("Missing auth info: %s" % ", ".join(missing_infos),
-                            err=True)
+                           err=True)
                 sys.exit(1)
 
             if missing_infos & {"consumer_key", "consumer_secret"}:
@@ -111,7 +112,7 @@ class Cli:
             click.echo(self.cfg.git_like_representation())
             return
 
-        if not "." in name:
+        if "." not in name:
             click.echo("Config variable must be of the form <section>.<name>",
                        err=True)
             sys.exit(1)
@@ -189,6 +190,7 @@ class Cli:
 def cli(ctx, **kw):
     ctx.obj = Cli(**kw)
 
+
 @cli.command()
 @click.option("--consumer-key", metavar="KEY", help="Consumer key (API key)")
 @click.option("--consumer-secret", metavar="SECRET",
@@ -205,6 +207,7 @@ def setup(cli, *args, **kw):
     """Setup the bot's config"""
     cli.setup(*args, **kw)
 
+
 @cli.command()
 @click.option("--raw", type=click.Path(),
               help=("Dump tweets in a file instead of feeding a model."
@@ -216,12 +219,14 @@ def populate(cli, *args, **kw):
     """Populate the Markov model"""
     cli.populate(*args, **kw)
 
+
 @cli.command()
 @click.option("--dry-run", "-n", is_flag=True, help="Don't tweet anything")
 @click.pass_obj
 def run(cli, *args, **kw):
     """Run the bot"""
     cli.run(*args, **kw)
+
 
 @cli.command()
 @click.argument("name", required=False)
@@ -235,6 +240,7 @@ def config(cli, *args, **kw):
     variable.
     """
     cli.config(*args, **kw)
+
 
 if __name__ == "__main__":
     cli()

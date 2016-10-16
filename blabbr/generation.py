@@ -4,6 +4,7 @@ from random import random
 
 from blabbr import text as tx
 
+
 class Generator:
     def __init__(self, model):
         self.model = model
