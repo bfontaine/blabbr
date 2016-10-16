@@ -2,6 +2,8 @@
 
 from random import random
 
+from blabbr import text as tx
+
 class Generator:
     def __init__(self, model):
         self.model = model
@@ -9,8 +11,7 @@ class Generator:
     def tweets(self, count=20, min_length=50):
         n = 0
         while n < count:
-            t = self.model.make_short_sentence(140,
-                    tries=100, max_overlap_ratio=0.5)
+            t = self.model.make_tweet()
             if not t:
                 continue
 
@@ -21,6 +22,9 @@ class Generator:
             n += 1
 
     def decorate_tweet(self, text):
+        # Remove spaces around punctuation. This may vary per language
+        text = tx.fix_punctuation(text)
+
         if len(text) < 138 and text[-1] not in "?!.":
             if random() > 0.9:
                 bang = "!" if random() > 0.1 else "!!"

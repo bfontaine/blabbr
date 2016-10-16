@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 
 import sys
-import os.path
 import textwrap
 
 import click
@@ -12,10 +11,8 @@ from blabbr.model import ModelBuilder, TwitterDigger
 from blabbr.bot import Bot
 
 class Cli:
-    DEFAULT_CONFIG_PATH = "~/.blabbr.cfg"
-
-    def __init__(self, cfg, model=None, **kw):
-        self.cfg = Config(os.path.expanduser(cfg))
+    def __init__(self, cfg=None, model=None, **kw):
+        self.cfg = Config.from_path(cfg)
         self.model_path = model
         self.model_builder = None
 
@@ -163,9 +160,7 @@ class Cli:
 
 
 @click.group()
-@click.option('--cfg', default=Cli.DEFAULT_CONFIG_PATH,
-              type=click.Path(),
-              help="Path to the config")
+@click.option('--cfg', type=click.Path(), help="Path to the config")
 @click.option("--model", type=click.Path(),
               help="Path to the saved model")
 @click.pass_context

@@ -15,6 +15,9 @@ def normalize(text):
         (r"&lt;", "<"),
         (r"&amp;", "&"),
 
+        # Lower-case what we're pretty sure are not accronyms
+        (r"([A-Z]{6,})", lambda m: m.group(1).lower()),
+
         # FR abbreviations
         (r"\bpr\b", "pour"),
         (r"\bgvt\b", "gouvernement"),
@@ -32,16 +35,21 @@ def normalize(text):
         # "blabla ." -> "blabla."
         (r" \.", "."),
 
+        (r" :: ", " "),
+        (r" :- ", " "),
+
         (r"\b\.\.\b", "... "),
 
         # "[...]" -> "..."
         (r"\[\.\.\.+\]", "..."),
+        # ":..." -> "..."
+        (r":\.\.\.+", "..."),
 
         # Fix bogus ellipsis e.g. "...…" -> "…"
         (r"\.+…\.*", "…"),
 
         # Remove ':' or '-' at the end of the tweet
-        (r"[-:]$", ""),
+        (r"[-:@]$", ""),
 
         # Remove "via @foo"
         (r"via @[^ ]+$", ""),
@@ -54,5 +62,12 @@ def normalize(text):
 
     for before, after in repls:
         text = re.sub(before, after, text).strip()
+
+    return text
+
+def fix_punctuation(text):
+    # This may vary per language
+    text = text.replace(" ' ", "'")
+    text = re.sub(" ([\.,])", "\\1", text)
 
     return text

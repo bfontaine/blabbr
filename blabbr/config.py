@@ -23,10 +23,28 @@ DEFAULT_CONFIG = {
 }
 
 class Config:
-    def __init__(self, location="$root/blabbr.cfg"):
-        self.path = location.replace("$root", root)
+    DEFAULT_PATH = os.path.expanduser("~/.blabbr.cfg")
+
+    LOOKUP_PATHS = (
+        "blabbr.cfg",
+        DEFAULT_PATH,
+    )
+
+    def __init__(self, path):
+        self.path = path
         self.cfg = ConfigParser()
         self.load()
+
+    @classmethod
+    def from_path(cls, path):
+        if path is not None:
+            return cls(os.path.expanduser(path))
+
+        for path in cls.LOOKUP_PATHS:
+            if os.path.isfile(path):
+                return cls(path)
+
+        return cls(cls.DEFAULT_PATH)
 
     def load(self):
         if not os.path.isfile(self.path):
@@ -81,3 +99,7 @@ class Config:
 
     def get_auth(self):
         return dict(self.cfg["auth"])
+
+    def enabled_features(self):
+        feats = self.cfg["behavior"]
+        return {k: feats.getboolean(k) for k in feats}
