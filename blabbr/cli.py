@@ -27,8 +27,8 @@ class Cli:
         click.echo("\n\n".join(paragraphs), **kw)
 
     def setup(self, **kw):
-        self.setup_auth(**kw)
         self.setup_nltk(**kw)
+        self.setup_auth(**kw)
 
     def setup_auth(self, noninteractive=False, force=False, **kw):
         if not force and self.cfg.get_auth():
