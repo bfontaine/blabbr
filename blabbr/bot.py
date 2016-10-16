@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from blabbr.generation import Generator
 from blabbr.twitter import TwitterClient
+from blabbr.logging import getLogger
 
 from blabbr.time import Clock
 
@@ -17,6 +18,7 @@ class Bot:
                  dry_run=False):
         self.twitter = TwitterClient(cfg=cfg)
         self.clock = Clock() if clock is None else clock
+        self.logger = getLogger("bot")
 
         if generator:
             self.generator = generator
@@ -33,12 +35,17 @@ class Bot:
         """
         Start the bot's life
         """
+        self.logger.debug("Starting to live...")
+        self.logger.debug("Dry run: %s" % self.dry_run)
+
         while True:
-            if self.schedule.time_to_sleep():
+            if self.clock.time_to_sleep():
+                self.logger.debug("Sleeping...")
                 self.sleep(40, 50)
                 continue
 
-            if not self.schedule.time_to_chill():
+            if not self.clock.time_to_chill():
+                self.logger.debug("Not a time to chill...")
                 self.sleep(20, 25)
                 continue
 
@@ -50,8 +57,10 @@ class Bot:
         This method is called every one to two minutes when the bot has free
         time.
         """
+        self.logger.debug("tick")
         feeling_inspired = random() > 0.7
         if not feeling_inspired:
+            self.logger.debug("Not feeling inspired")
             return
 
         self.tweet()
@@ -61,15 +70,14 @@ class Bot:
         Post a random tweet. This has no effect if the last tweet was less than
         20s ago.
         """
-        now = self.schedule.now()
+        now = self.clock.now()
         if self._last_tweet_time and \
                 now < self._last_tweet_time + MIN_TWEET_INTERVAL:
             return
 
         text = self.generator.tweet()
-        if self.dry_run:
-            print("Tweet: %s" % text)
-        else:
+        self.logger.debug("About to tweet: %s" % text)
+        if not self.dry_run:
             self.twitter.tweet(text)
 
         self._last_tweet = text
