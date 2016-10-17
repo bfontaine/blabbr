@@ -23,6 +23,8 @@ class POSifiedText(markovify.Text):
     def __init__(self, input_text, state_size=2, chain=None):
         self.tokenizer = TweetTokenizer(reduce_len=True)
 
+        self.tag_sep = "@::@"
+
         # Circumvent some limitations of markovify by allowing one to create a
         # POSifiedText from a markovify.Text instance
         if isinstance(input_text, markovify.Text):
@@ -35,12 +37,12 @@ class POSifiedText(markovify.Text):
 
     def word_split(self, sentence):
         words = self.tokenizer.tokenize(sentence)
-        words = ["::".join((tag, word))
+        words = [self.tag_sep.join((tag, word))
                  for word, tag in nltk.pos_tag(words) if word]
         return words
 
     def word_join(self, words):
-        return " ".join(word.split("::", 1)[1] for word in words)
+        return " ".join(word.split(self.tag_sep, 1)[1] for word in words)
 
 
 class NewlinePOSifiedText(POSifiedText):

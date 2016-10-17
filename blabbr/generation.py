@@ -25,8 +25,6 @@ class Generator:
     def decorate_tweet(self, text):
         # Remove spaces around punctuation. This may vary per language
         text = tx.fix_punctuation(text)
-        # FIXME see why some tweets have that in them
-        text = text.replace(" :: ", " ")
 
         if len(text) < 138 and text[-1] not in "?!.":
             if random() > 0.9:
