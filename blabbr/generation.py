@@ -43,7 +43,7 @@ class Generator:
     def _tweet_ok(self, t, min_length=50):
         _forbidden_terms = (
             # FR
-            "faut tuer", "à mort", "suicid", "bombe", "encul",
+            "tuer", "mort", "suicid", "bombe", "encul",
         )
 
         if len(t) < min_length:
