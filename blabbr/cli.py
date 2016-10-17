@@ -26,15 +26,18 @@ class Cli:
 
         click.echo("\n\n".join(paragraphs), **kw)
 
-    def setup(self, **kw):
-        self.setup_nltk(**kw)
-        self.setup_auth(**kw)
-
-    def setup_auth(self, noninteractive=False, force=False, **kw):
-        if not force and self.cfg.get_auth():
+    def setup(self, force=False, **kw):
+        did_setup = True
+        did_setup &= self.setup_nltk(force=force, **kw)
+        did_setup &= self.setup_auth(force=force, **kw)
+        if not did_setup and not force:
             click.echo("The bot is already setup! Use --force if you're sure.",
                        err=True)
             sys.exit(1)
+
+    def setup_auth(self, noninteractive=False, force=False, **kw):
+        if not force and len(self.cfg.get_auth()) >= 4:
+            return False
 
         auth = {k: kw.get(k) for k in
                 ("consumer_key", "consumer_secret", "token", "token_secret")}
@@ -90,10 +93,11 @@ class Cli:
                 auth["token_secret"] = oauth.access_token_secret
                 click.echo()
 
-        click.echo("Your bot is set up!")
+        click.echo("Your bot's authentication is set up!")
 
         self.cfg.set_auth(auth)
         self.cfg.save()
+        return True
 
     def setup_nltk(self, **kw):
         import nltk
@@ -106,6 +110,9 @@ class Cli:
         except LookupError:
             click.echo("Downloading NTLK data (~2MB)...")
             nltk.download(tagger)
+            return True
+
+        return False
 
     def config(self, name=None, value=None):
         if not name:
@@ -159,13 +166,15 @@ class Cli:
         return self._populate(tweets)
 
     def _populate(self, tweets):
+        chunk_size = 2000
+
         with self._load_model() as mb:
             corpus = []
             try:
                 for tweet in tweets:
                     corpus.append(tweet)
-                    if len(corpus) == 2000:
-                        click.echo("Feeding 2000 tweets...")
+                    if len(corpus) == chunk_size:
+                        click.echo("Feeding %d tweets..." % chunk_size)
                         mb.feed_corpus("\n".join(corpus))
                         corpus = []
             except KeyboardInterrupt:
