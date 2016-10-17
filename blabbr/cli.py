@@ -119,6 +119,10 @@ class Cli:
             click.echo(self.cfg.git_like_representation())
             return
 
+        if name == "init":
+            self.cfg.save()
+            return
+
         if "." not in name:
             click.echo("Config variable must be of the form <section>.<name>",
                        err=True)
