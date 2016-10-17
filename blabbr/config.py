@@ -10,7 +10,12 @@ DEFAULT_CONFIG = {
         "lang": "en",
         "timezone": "Europe/Paris",
     },
-    "auth": {},
+    "auth": {
+        "consumer_key": "",
+        "consumer_secret": "",
+        "token": "",
+        "token_secret": "",
+    },
     "seeds": {
         "screen_names": "",
     }
@@ -96,7 +101,7 @@ class Config:
         self.cfg["auth"] = dict(auth)
 
     def get_auth(self):
-        return dict(self.cfg["auth"])
+        return {k: v for k, v in self.cfg["auth"].items() if v}
 
     def enabled_features(self):
         feats = self.cfg["bot"]
