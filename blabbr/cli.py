@@ -142,7 +142,8 @@ class Cli:
     def _model(self):
         return self.model_builder.model()
 
-    def populate(self, raw=None, from_raw=None):
+    def populate(self, raw=None, from_raw=None, pick_friends=10,
+            timeline_size=1000):
         digger = TwitterDigger(self.cfg)
 
         if raw:
@@ -161,7 +162,8 @@ class Cli:
                 for line in f:
                     tweets.append(line.rstrip())
         else:
-            tweets = digger.tweets()
+            tweets = digger.tweets(pick_friends=pick_friends,
+                                   timeline_size=timeline_size)
 
         return self._populate(tweets)
 
@@ -224,6 +226,13 @@ def setup(cli, *args, **kw):
                     " Useful for debugging."))
 @click.option("--from-raw", type=click.Path(),
               help=("Read tweets from a file instead of the Twitter API."))
+@click.option("--pick-friends", type=int,
+              default=10,
+              help=("Number of friends to check when populating from Twitter"
+                    " (default: 10)."))
+@click.option("--timeline-size", type=int,
+              default=1000,
+              help="Number of tweets to retrieve per user (default: 1000)")
 @click.pass_obj
 def populate(cli, *args, **kw):
     """Populate the Markov model"""
