@@ -6,6 +6,10 @@ from blabbr import text as tx
 
 
 class Generator:
+    """
+    A random tweets generator.
+    """
+
     def __init__(self, model):
         self.model = model
 

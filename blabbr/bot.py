@@ -14,6 +14,10 @@ MIN_TWEET_INTERVAL = timedelta(minutes=20)
 
 
 class Bot:
+    """
+    A Twitter bot.
+    """
+
     def __init__(self, cfg=None, generator=None, clock=None, model=None,
                  dry_run=False, debug=False):
         self.twitter = TwitterClient(cfg=cfg)
@@ -38,7 +42,8 @@ class Bot:
 
     def live(self):
         """
-        Start the bot's life
+        Start the bot's life. This methods never returns but may raise
+        exceptions.
         """
         self.logger.debug("Starting to live...")
         self.logger.debug("Dry run: %s" % self.dry_run)
@@ -73,7 +78,7 @@ class Bot:
     def tweet(self):
         """
         Post a random tweet. This has no effect if the last tweet was less than
-        20s ago.
+        20s ago or if the ``tweet`` feature is disabled.
         """
         if not self.features.get("tweet", True):
             self.logger.debug("Tweeting is disabled in the config")
