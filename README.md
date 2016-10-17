@@ -1,6 +1,6 @@
 # Blabbr
 
-`blabbr` is a Twitter bot that tweets randomly-generated texts using
+`blabbr` is a bot that tweets randomly-generated texts using
 [Markov chains](markovify).
 
 [markovify]: https://github.com/jsvine/markovify
