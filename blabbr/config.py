@@ -21,11 +21,11 @@ for f in FEATURES:
 
 
 class Config:
-    DEFAULT_PATH = os.path.expanduser("~/.blabbr.cfg")
+    DEFAULT_PATH = "blabbr.cfg"  # current directory
 
     LOOKUP_PATHS = (
-        "blabbr.cfg",
         DEFAULT_PATH,
+        os.path.expanduser("~/.blabbr.cfg")
     )
 
     def __init__(self, path):
