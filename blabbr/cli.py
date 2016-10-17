@@ -150,15 +150,6 @@ class Cli:
             timeline_size=1000):
         digger = TwitterDigger(self.cfg)
 
-        if raw:
-            with open(raw, "a") as f:
-                try:
-                    for tweet in digger.tweets():
-                        f.write("%s\n" % tweet.replace("\n", " "))
-                except KeyboardInterrupt:
-                    pass
-            return
-
         tweets = []
 
         if from_raw:
@@ -168,6 +159,15 @@ class Cli:
         else:
             tweets = digger.tweets(pick_friends=pick_friends,
                                    timeline_size=timeline_size)
+
+        if raw:
+            with open(raw, "a") as f:
+                try:
+                    for tweet in tweets:
+                        f.write("%s\n" % tweet.replace("\n", " "))
+                except KeyboardInterrupt:
+                    pass
+            return
 
         return self._populate(tweets)
 
