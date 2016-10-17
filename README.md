@@ -14,14 +14,47 @@ Then follow the interactive setup:
     blabbr setup
 
 You can also initialize a configuration file with `blabbr config init` then
-fill it by hand.
+fill it by hand. Check the _Config_ section below for more info.
 
 ## Run
 
 Running a bot with `blabbr` is done in two steps: first, feed the model. Then,
 use that model to generate tweets.
 
+You can feed your model either from Twitter using a few users as a seed or from
+a file that contains one tweet per line:
+
+    # feed from Twitter
+    $ blabbr populate
+
+    # feed from a file
+    $ blabbr populate --from-raw mytweets.txt
+
+You can also retrieve tweets in a file instead of feeding them directly to the
+model. This is useful in combination with `--from-raw` to check the tweets
+before feeding them:
+
+    # append tweets to tweets.txt, one per line
+    $ blabbr populate --raw tweets.txt
+
+By default the model is stored in `blabbr.json` in the current directory. You
+can change that by using the `--model` option:
+
+    $ blabbr --model mymodel.json populate
+
+Populating an existing model doesn’t erase its previous content.
+
+---
+
+Once you’re happy with your model run it:
+
     blabbr run
+
+The default bot follows a few rules to behave well with its human friends:
+
+* It doesn’t tweet during the night
+* It tweets less during work hours
+* It never tweets more than twice in a couple of minutes
 
 ### Config
 
@@ -61,3 +94,8 @@ follow = True
 * `bot.lang` is used to filter tweets when populating the model.
 * `bot.follow` and other boolean options are flags to enable/disable some of
   the bot's actions. Right now only the `tweet` feature is implemented.
+
+You can print your configuration with `blabbr config`. Use `--cfg` to specify
+another path:
+
+    $ blabbr --cfg ~/.config/blabbr.cfg <command> [options...]
