@@ -131,7 +131,7 @@ class TwitterDigger:
         self.names = deque([n.strip() for n in names.split(",")])
         self._seen = set()
         self._twitter = TwitterClient(cfg)
-        self._lang = cfg.get("content", "lang")
+        self._lang = cfg.get("bot", "lang")
 
     def screen_names(self, pick_friends=10):
         """

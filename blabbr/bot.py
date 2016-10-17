@@ -17,7 +17,7 @@ class Bot:
     def __init__(self, cfg=None, generator=None, clock=None, model=None,
                  dry_run=False, debug=False):
         self.twitter = TwitterClient(cfg=cfg)
-        self.clock = Clock() if clock is None else clock
+        self.clock = Clock(cfg) if clock is None else clock
         self.logger = getLogger("bot")
 
         if generator:
@@ -30,6 +30,7 @@ class Bot:
         if debug:
             dry_run = True
 
+        self.features = cfg.enabled_features()
         self.dry_run = dry_run
         self.debug = debug
         self.last_tweet = None
@@ -74,6 +75,10 @@ class Bot:
         Post a random tweet. This has no effect if the last tweet was less than
         20s ago.
         """
+        if not self.features.get("tweet", True):
+            self.logger.debug("Tweeting is disabled in the config")
+            return
+
         now = self.clock.now()
         if self.last_tweet_time and \
                 now < self.last_tweet_time + MIN_TWEET_INTERVAL:

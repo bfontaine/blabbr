@@ -10,8 +10,8 @@ class Clock:
     A clock to be used by a ``Bot``.
     """
 
-    def __init__(self, tz="Europe/Paris"):
-        self.tz = tz
+    def __init__(self, cfg):
+        self.tz = cfg.get("bot", "timezone")
 
     def time_to_sleep(self):
         """

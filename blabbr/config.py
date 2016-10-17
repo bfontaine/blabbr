@@ -3,21 +3,21 @@
 import os.path
 from configparser import ConfigParser
 
+FEATURES = ("follow", "unfollow", "like", "retweet")
+
 DEFAULT_CONFIG = {
-    "content": {
+    "bot": {
         "lang": "en",
+        "timezone": "Europe/Paris",
     },
     "auth": {},
-    "behavior": {
-        "follow": True,
-        "unfollow": True,
-        "like": True,
-        "retweet": True,
-    },
     "seeds": {
         "screen_names": "",
     }
 }
+
+for f in FEATURES:
+    DEFAULT_CONFIG["bot"][f] = True
 
 
 class Config:
@@ -99,5 +99,5 @@ class Config:
         return dict(self.cfg["auth"])
 
     def enabled_features(self):
-        feats = self.cfg["behavior"]
-        return {k: feats.getboolean(k) for k in feats}
+        feats = self.cfg["bot"]
+        return {k: feats.getboolean(k, fallback=True) for k in FEATURES}
