@@ -12,6 +12,7 @@ import markovify.text
 from markovify.chain import Chain
 
 from blabbr.twitter import TwitterClient
+from blabbr.logging import getLogger
 from blabbr import text as tx
 
 # Simple format versionning
@@ -134,6 +135,7 @@ class TwitterDigger:
         self._seen = set()
         self._twitter = TwitterClient(cfg)
         self._lang = cfg.get("bot", "lang")
+        self.logger = getLogger("digger")
 
     def screen_names(self, pick_friends=10):
         """
@@ -151,6 +153,8 @@ class TwitterDigger:
 
             for friend in self._twitter.friends(screen_name, n=pick_friends):
                 if self._lang and friend.lang != self._lang:
+                    continue
+                if friend.protected or not friend.statuses_count:
                     continue
                 self.names.append(friend.screen_name)
 
@@ -174,7 +178,12 @@ class TwitterDigger:
         """
         Generate tweets from seed accounts' timelines and their friends'.
         """
+        self.logger.debug((
+            "Retrieving tweets with options pick_friends=%d,"
+            " timeline_size=%d") % (pick_friends, timeline_size))
+
         for name in self.screen_names(pick_friends=pick_friends):
+            self.logger.debug("Checking @%s..." % name)
             for text in self.account_timeline(name, size=timeline_size):
                 yield text
 
