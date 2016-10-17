@@ -201,6 +201,7 @@ class Cli:
 @click.group()
 @click.option('--cfg', type=click.Path(), help="Path to the config")
 @click.option("--model", type=click.Path(),
+              default="blabbr.json",  # default to the current directory
               help="Path to the saved model")
 @click.pass_context
 def cli(ctx, **kw):
