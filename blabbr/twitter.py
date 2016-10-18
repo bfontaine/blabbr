@@ -17,18 +17,23 @@ class TwitterClient:
         auth.set_access_token(ks["token"], ks["token_secret"])
         self.api = tweepy.API(auth)
 
+    def verify_credentials(self):
+        return self.api.verify_credentials()
+
     def user_tweets(self, user_id, n=20):
-        cursor = tweepy.Cursor(self.api.user_timeline, id=user_id, count=n)
-        for status in rate_limited(cursor.items(n)):
-            yield status
+        return rate_limited_generator(self.api.user_timeline, n, id=user_id)
+
+    def home_tweets(self, n=20):
+        """
+        Return up to ``n`` tweets from the bot's timeline.
+        """
+        return rate_limited_generator(self.api.home_timeline, n)
 
     def tweet(self, text):
         self.api.update_status(text)
 
     def friends(self, user_id, n=20):
-        cursor = tweepy.Cursor(self.api.friends, id=user_id, count=n)
-        for account in rate_limited(cursor.items(n)):
-            yield account
+        return rate_limited_generator(self.api.friends, n, id=user_id)
 
 
 def rate_limited(cursor, sleeping_time=(15*60+5)):
@@ -38,3 +43,8 @@ def rate_limited(cursor, sleeping_time=(15*60+5)):
         except tweepy.RateLimitError:
             print("Sleeping...", file=sys.stderr)
             time.sleep(sleeping_time)
+
+def rate_limited_generator(method, n, **kw):
+    cursor = tweepy.Cursor(method, count=n, **kw)
+    for el in rate_limited(cursor.items(n)):
+        yield el

@@ -8,6 +8,7 @@ import tweepy
 
 from blabbr.config import Config
 from blabbr.model import ModelBuilder, TwitterDigger
+from blabbr.twitter import TwitterClient
 from blabbr.bot import Bot
 
 
@@ -26,7 +27,10 @@ class Cli:
 
         click.echo("\n\n".join(paragraphs), **kw)
 
-    def setup(self, force=False, **kw):
+    def setup(self, force=False, check=False, **kw):
+        if check:
+            return self.setup_check()
+
         did_setup = True
         did_setup &= self.setup_nltk(force=force, **kw)
         did_setup &= self.setup_auth(force=force, **kw)
@@ -44,7 +48,7 @@ class Cli:
 
         missing_infos = set(k for k, v in auth.items() if v is None)
 
-        if missing_infos:
+        if False and missing_infos:
             if noninteractive:
                 click.echo("Missing auth info: %s" % ", ".join(missing_infos),
                            err=True)
@@ -93,9 +97,27 @@ class Cli:
                 auth["token_secret"] = oauth.access_token_secret
                 click.echo()
 
-        click.echo("Your bot's authentication is set up!")
-
         self.cfg.set_auth(auth)
+
+        client = TwitterClient(self.cfg)
+        valid_creds = client.verify_credentials()
+
+        if valid_creds:
+            click.echo("Your bot's authentication is set up!")
+            click.echo("Screen name: %s" % valid_creds.screen_name)
+            click.echo("Name: %s" % valid_creds.name)
+
+            # Save the bot identification infos in the config for later use.
+            # This saves us an API call when we need them; e.g. when filtering
+            # the home timeline since it may contains some of the bot's tweets.
+            self.cfg.set("bot", "screen_name", valid_creds.screen_name)
+            self.cfg.set("bot", "id", valid_creds.id_str)
+        else:
+            click.echo(
+                "Your authentication credentials seem invalid. Please check"
+                " them again.")
+
+        self.setup_check()
         self.cfg.save()
         return True
 
@@ -113,6 +135,25 @@ class Cli:
             return True
 
         return False
+
+    def setup_check(self):
+        client = TwitterClient(self.cfg)
+        valid_creds = client.verify_credentials()
+
+        if valid_creds:
+            click.echo("Your bot's authentication is set up!")
+            click.echo("Screen name: %s" % valid_creds.screen_name)
+            click.echo("Name: %s" % valid_creds.name)
+
+            # Save the bot identification infos in the config for later use.
+            # This saves us an API call when we need them; e.g. when filtering
+            # the home timeline since it may contains some of the bot's tweets.
+            self.cfg.set("bot", "screen_name", valid_creds.screen_name)
+            self.cfg.set("bot", "id", valid_creds.id_str)
+        else:
+            click.echo(
+                "Your authentication credentials seem invalid. Please check"
+                " them again.")
 
     def config(self, name=None, value=None):
         if not name:
@@ -219,6 +260,8 @@ def cli(ctx, **kw):
                     " interactive setup."))
 @click.option("--force", is_flag=True,
               help="Force the setup even if the bot is already set.")
+@click.option("--check", is_flag=True,
+              help="Check the authentication setup.")
 @click.pass_obj
 def setup(cli, *args, **kw):
     """Setup the bot's config"""

@@ -39,15 +39,19 @@ class Config:
         self.load()
 
     @classmethod
-    def from_path(cls, path):
-        if path is not None:
-            return cls(os.path.expanduser(path))
-
+    def default(cls):
         for path in cls.LOOKUP_PATHS:
             if os.path.isfile(path):
                 return cls(path)
 
         return cls(cls.DEFAULT_PATH)
+
+    @classmethod
+    def from_path(cls, path):
+        if path is not None:
+            return cls(os.path.expanduser(path))
+
+        return cls.default()
 
     def load(self):
         if not os.path.isfile(self.path):
