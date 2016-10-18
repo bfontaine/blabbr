@@ -95,7 +95,16 @@ follow = True
 * `bot.follow` and other boolean options are flags to enable/disable some of
   the bot's actions. Right now only the `tweet` feature is implemented.
 
+A few more variables can be set:
+
+* `bot.screen_name`: Your bot's screen name. It’ll be automatically set if you
+  use `blabbr setup`. This is used to save an API call when the bot needs to
+  know its own name, in order to e.g. filter out its own tweets from its home
+  timeline.
+
 You can print your configuration with `blabbr config`. Use `--cfg` to specify
 another path:
 
     $ blabbr --cfg ~/.config/blabbr.cfg <command> [options...]
+
+Check your authentication configuration with `blabbr setup --check`.

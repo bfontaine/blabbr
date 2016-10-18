@@ -48,7 +48,7 @@ class Cli:
 
         missing_infos = set(k for k, v in auth.items() if v is None)
 
-        if False and missing_infos:
+        if missing_infos:
             if noninteractive:
                 click.echo("Missing auth info: %s" % ", ".join(missing_infos),
                            err=True)
@@ -111,7 +111,6 @@ class Cli:
             # This saves us an API call when we need them; e.g. when filtering
             # the home timeline since it may contains some of the bot's tweets.
             self.cfg.set("bot", "screen_name", valid_creds.screen_name)
-            self.cfg.set("bot", "id", valid_creds.id_str)
         else:
             click.echo(
                 "Your authentication credentials seem invalid. Please check"
