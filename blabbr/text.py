@@ -47,7 +47,7 @@ def normalize(text):
         (r"[-/><=:@&]+$", ""),
 
         # Lower-case what we're pretty sure are not accronyms
-        (r"([A-Z]{6,})", lambda m: m.group(1).lower()),
+        (r"([A-ZÀÈÌÒÙÁÉÍÓÚÝÂÊÎÔÛÄËÏÖÜŸ]{6,})", lambda m: m.group(1).lower()),
 
         # "foo:" -> "foo :" (FR)
         (r"\b:", " :"),
