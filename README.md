@@ -114,3 +114,7 @@ Check your authentication configuration with `blabbr setup --check`.
 The most notable limitation right now is that you have to build the model
 _before_ running the bot. It’d be a lot more interesting if it could feed its
 model in (near-)real-time.
+
+Additionally, I made this toolkit for my own usage and thus it’s best suited
+for tweets in French. It’ll work for other languages but the text cleaning step
+won’t be as good.
