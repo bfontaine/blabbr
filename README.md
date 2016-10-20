@@ -108,3 +108,9 @@ another path:
     $ blabbr --cfg ~/.config/blabbr.cfg <command> [options...]
 
 Check your authentication configuration with `blabbr setup --check`.
+
+### Limitations
+
+The most notable limitation right now is that you have to build the model
+_before_ running the bot. It’d be a lot more interesting if it could feed its
+model in (near-)real-time.
