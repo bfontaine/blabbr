@@ -1,6 +1,8 @@
 include *.rst
 include *.md
-include *.txt
-include README
-include LICENSE
+exclude *.txt
 exclude *.pyc
+exclude *.cfg
+exclude *.json
+include LICENSE
+include requirements.txt
