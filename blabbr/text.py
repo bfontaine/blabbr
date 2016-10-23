@@ -10,7 +10,9 @@ import re
 #   https://en.wikipedia.org/wiki/Miscellaneous_Technical
 #   https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)
 EMOJI_RE = re.compile("["
+    "\U00002022-\U00002023"  # bullets
     "\U00002300-\U000023FF"  # misc technical symbols
+    "\U000025A0-\U000025FF"  # geometric shapes
     "\U00002600-\U000026FF"  # misc symbols
     "\U00002700-\U000027BF"  # dingbats
     "\U00003000-\U0000303F"  # CJK symbols (Chinese/Japanese/Korean)
@@ -20,6 +22,7 @@ EMOJI_RE = re.compile("["
     "\U0001F300-\U0001F5FF"  # symbols & pictographs
     "\U0001F600-\U0001F64F"  # emoticons
     "\U0001F680-\U0001F6FF"  # transport & map symbols
+    "\U0001F900-\U0001F9FF"  # supplemental symbols and pictographs
     "]+")
 
 def merge_spaces(text):
@@ -41,13 +44,20 @@ def normalize(text):
 
         # Treat quotes as parts of the tweet for more fun
         (r'["“”«»]', " "),
+        # Fix single quotes
+        (r"[‘’]", "'"),
 
         # Remove random punctuation at the beginning & the end
         (r"^[-'&/\.,;><=]+", ""),
         (r"[-/><=:@&]+$", ""),
 
+        # merge multiple left/right brackets (sorry LISPers)
+        (r"([\[({})\]]){2,}", "\\1"),
+        # merge ellipsis
+        (r"\.\.\.\.+", "..."),
+
         # Lower-case what we're pretty sure are not accronyms
-        (r"([A-ZÀÈÌÒÙÁÉÍÓÚÝÂÊÎÔÛÄËÏÖÜŸ]{6,})", lambda m: m.group(1).lower()),
+        (r"([A-ZÀÈÌÒÙÁÉÍÓÚÝÂÊÎÔÛÄËÏÖÜŸ]{5,})", lambda m: m.group(1).lower()),
 
         # "foo:" -> "foo :" (FR)
         (r"\b:", " :"),
@@ -64,15 +74,12 @@ def normalize(text):
         # "blabla ." -> "blabla."
         (r" \.", "."),
 
-        (r" :: ", " "),
-        (r" :- ", " "),
+        (r" :[:-] ", " "),
 
         (r"\b\.\.\b", "... "),
 
         # "[...]" -> "..."
         (r"\[\.\.\.+\]", "..."),
-        # ":..." -> "..."
-        (r":\.\.\.+", "..."),
 
         # Fix bogus ellipsis e.g. "...…" -> "…"
         (r"\.*…\.*", "… "),
@@ -80,14 +87,26 @@ def normalize(text):
         # Remove "via @foo"
         (r"via @[^ ]+$", ""),
         (r"(?:via )?#feedly", ""),
-        (r"via$", ""),
+        (r"\(?via$", ""),
 
-        # "aa | bb" -> "aa  bb"
-        (r"\|", ""),
+        # Remove '(update)' or '(updated)' at the end
+        (r"\(?(?:m[aà]j|updated?)\)?$", ""),
+        # Remove numbers in brackets at the beginning
+        (r"^\(\d+\)", ""),
+        # Remove '(video)' at the beginning
+        (r"^[(\[{]?vid[eé]o[)\]}]?", ""),
+        # Remove video durations e.g. '(1mn17)'
+        (r"\(\d+mi?n\d*\)", ""),
+
+        # Remove pipes
+        (r"\|", " "),
     )
 
     for before, after in repls:
-        text = re.sub(before, after, text).strip()
+        flags=0
+        if after == "" and isinstance(before, str):
+            flags = re.IGNORECASE
+        text = re.sub(before, after, text, flags=flags).strip()
 
     typos = (
         # FR abbreviations & typos
