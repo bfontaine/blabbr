@@ -187,7 +187,7 @@ class Cli:
         return self.model_builder.model()
 
     def populate(self, raw=None, from_raw=None, pick_friends=10,
-            timeline_size=1000):
+            timeline_size=1000, chunk_size=2000):
         digger = TwitterDigger(self.cfg)
 
         tweets = []
@@ -209,11 +209,9 @@ class Cli:
                     pass
             return
 
-        return self._populate(tweets)
+        return self._populate(tweets, chunk_size)
 
-    def _populate(self, tweets):
-        chunk_size = 2000
-
+    def _populate(self, tweets, chunk_size=2000):
         with self._load_model() as mb:
             corpus = []
             try:
@@ -280,6 +278,9 @@ def setup(cli, *args, **kw):
 @click.option("--timeline-size", type=int,
               default=1000,
               help="Number of tweets to retrieve per user (default: 1000)")
+@click.option("--chunk-size", type=int,
+              default=2000,
+              help="Number of tweets to insert at a time in the model.")
 @click.pass_obj
 def populate(cli, *args, **kw):
     """Populate the Markov model"""
