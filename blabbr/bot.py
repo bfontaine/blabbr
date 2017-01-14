@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from blabbr.generation import Generator
 from blabbr.twitter import TwitterClient
-from blabbr.logging import getLogger
+from blabbr.log import getLogger
 
 from blabbr.time import Clock
 

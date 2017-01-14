@@ -12,7 +12,7 @@ import markovify.text
 from markovify.chain import Chain
 
 from blabbr.twitter import TwitterClient
-from blabbr.logging import getLogger
+from blabbr.log import getLogger
 from blabbr import text as tx
 
 # Simple format versionning
