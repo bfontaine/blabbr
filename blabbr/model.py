@@ -219,7 +219,7 @@ def filter_status_text(text):
             return
 
     # truncated
-    if text.endswith("…"):
+    if text.endswith("…") or text.endswith("..."):
         return
 
     # Those are mostly headlines
