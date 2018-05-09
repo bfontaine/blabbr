@@ -76,11 +76,7 @@ token_secret =
 
 [bot]
 timezone = Europe/Paris
-unfollow = True
-retweet = True
 lang = en
-like = True
-follow = True
 ```
 
 * `seeds.screen_names` should be a comma-separated list of Twitter usernames.

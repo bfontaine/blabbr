@@ -34,7 +34,6 @@ class Bot:
         if debug:
             dry_run = True
 
-        self.features = cfg.enabled_features()
         self.dry_run = dry_run
         self.debug = debug
         self.last_tweet = None
@@ -78,12 +77,8 @@ class Bot:
     def tweet(self):
         """
         Post a random tweet. This has no effect if the last tweet was less than
-        20s ago or if the ``tweet`` feature is disabled.
+        20s ago.
         """
-        if not self.features.get("tweet", True):
-            self.logger.debug("Tweeting is disabled in the config")
-            return
-
         now = self.clock.now()
         if self.last_tweet_time and \
                 now < self.last_tweet_time + MIN_TWEET_INTERVAL:

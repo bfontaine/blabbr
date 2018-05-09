@@ -3,8 +3,6 @@
 import os.path
 from configparser import ConfigParser
 
-FEATURES = ("follow", "unfollow", "like", "retweet")
-
 DEFAULT_CONFIG = {
     "bot": {
         "lang": "en",
@@ -20,9 +18,6 @@ DEFAULT_CONFIG = {
         "screen_names": "",
     }
 }
-
-for f in FEATURES:
-    DEFAULT_CONFIG["bot"][f] = True
 
 
 class Config:
@@ -106,7 +101,3 @@ class Config:
 
     def get_auth(self):
         return {k: v for k, v in self.cfg["auth"].items() if v}
-
-    def enabled_features(self):
-        feats = self.cfg["bot"]
-        return {k: feats.getboolean(k, fallback=True) for k in FEATURES}
