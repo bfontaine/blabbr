@@ -55,7 +55,7 @@ class Model:
     def __init__(self, markov_model):
         self.m = markov_model
 
-    def make_tweet(self, size=140, tries=100, max_overlap_ratio=0.5, **kw):
+    def make_tweet(self, size=280, tries=100, max_overlap_ratio=0.5, **kw):
         return self.m.make_short_sentence(size, tries=tries,
                                           max_overlap_ratio=max_overlap_ratio,
                                           **kw)
