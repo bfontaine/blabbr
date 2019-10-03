@@ -1,7 +1,7 @@
 arrow==0.8.0
 click==6.6
 markovify==0.4.2
-nltk==3.2.1
+nltk==3.4.5
 oauthlib==2.0.0
 python-dateutil==2.5.3
 requests==2.20.0
